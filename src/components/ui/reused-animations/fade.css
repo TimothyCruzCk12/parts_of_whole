@@ -1,0 +1,151 @@
+/* Fade Animations */
+@keyframes fadeInInPlaceAnimation {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeInUpAnimation {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInDownAnimation {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInLeftAnimation {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeInRightAnimation {
+    from {
+        opacity: 0;
+        transform: translateX(10px);
+    }
+    to { 
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeOutInPlaceAnimation {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes fadeOutUpAnimation {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes fadeOutDownAnimation {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+}
+
+@keyframes fadeOutLeftAnimation {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+}
+
+@keyframes fadeOutRightAnimation {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(10px);
+    }
+}
+
+/* Animation Classes */
+.fade-in-in-place-animation {
+    animation: fadeInInPlaceAnimation 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.fade-in-up-animation {
+    animation: fadeInUpAnimation 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.fade-in-down-animation {
+    animation: fadeInDownAnimation 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.fade-in-left-animation {
+    animation: fadeInLeftAnimation 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.fade-in-right-animation {
+    animation: fadeInRightAnimation 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.fade-out-in-place-animation {
+    animation: fadeOutInPlaceAnimation 1s ease-out forwards;
+}
+
+.fade-out-up-animation {
+    animation: fadeOutUpAnimation 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.fade-out-down-animation {
+    animation: fadeOutDownAnimation 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.fade-out-left-animation {
+    animation: fadeOutLeftAnimation 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.fade-out-right-animation {
+    animation: fadeOutRightAnimation 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.no-show-animation {
+    display: none !important;
+}

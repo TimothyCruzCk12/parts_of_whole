@@ -1,0 +1,73 @@
+/* Scale Animations */
+@keyframes shrinkOutAnimation {
+    from {
+        transform: scale(1);
+        opacity: 1;
+    }
+    to {
+        transform: scale(0);
+        opacity: 0;
+    }
+}
+
+@keyframes shrinkOutCenteredAnimation {
+    from {
+        transform: scale(1);
+        opacity: 1;
+        transform: translateX(-50%);
+    }
+    to {
+        transform: scale(0);
+        opacity: 0;
+        transform: translateX(-50%);
+    }
+}
+
+@keyframes growInAnimation {
+    from {
+        transform: scale(0);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes growInCenteredAnimation {
+    from {
+        transform: scale(0);
+        opacity: 0;
+        transform: translateX(-50%);
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+        transform: translateX(-50%);
+    }
+}
+/* Animation Classes */
+.shrink-out-animation {
+    animation: shrinkOutAnimation 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.shrink-out-centered-animation {
+    animation: shrinkOutCenteredAnimation 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.grow-in-animation {
+    animation: growInAnimation 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.grow-in-centered-animation {
+    animation: growInCenteredAnimation 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Apply animations to the glow-button div container as well */
+.glow-button.shrink-out-animation {
+    animation: shrinkOutAnimation 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.glow-button.continue-animation {
+    animation: growInAnimation 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}

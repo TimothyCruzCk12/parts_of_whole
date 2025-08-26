@@ -1,0 +1,65 @@
+/* Glow Animations */
+
+@property --r {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 0deg;
+}
+
+@keyframes rotating {
+    0% {
+        --r: 0deg;
+    }
+    100% {
+        --r: 360deg;
+    }
+}
+
+/* Glow Button Styles */
+.glow-button { 
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    border-radius: 8px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3;
+    transition: all .3s ease;
+    padding: 7px;
+    width: fit-content;
+    height: fit-content;
+    margin-bottom: 5px;
+    margin-right: 5px;
+    pointer-events: none;
+}
+
+.glow-button::before {
+    content: "";
+    display: block;
+    position: absolute;
+    background: var(--bgColor, #fff);
+    inset: 2px;
+    border-radius: 4px;
+    z-index: -2;
+}
+
+.simple-glow { 
+    background: conic-gradient(
+        from var(--r),
+        transparent 0%,
+        rgb(0, 255, 132) 2%,
+        rgb(0, 214, 111) 8%,
+        rgb(0, 174, 90) 12%,
+        rgb(0, 133, 69) 14%,
+        transparent 15%
+    );
+    animation: rotating 3s linear infinite;
+    transition: animation 0.3s ease;
+}
+
+.simple-glow.stopped {
+    animation: none;
+    background: none;
+} 
