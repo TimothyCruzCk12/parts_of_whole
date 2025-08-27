@@ -1,6 +1,8 @@
 import React from 'react';
 
-export const Pizza = ({
+export const getRandomFood = () => (Math.random() < 0.5 ? Pizza : Brownie);
+
+const Pizza = ({
 	/** Overall rendered size in pixels */
 	size = 180,
 	/** Whether to draw faint slice divider lines */
@@ -9,6 +11,10 @@ export const Pizza = ({
 	numerator = 0,
 	/** Total number of slices (the fraction denominator) */
 	denominator = 8,
+	/** Color used to represent the numerator (filled fraction) */
+	numeratorColor = '#dc2626',
+	/** Color used to represent the denominator (unfilled/background fraction) */
+	denominatorColor = '#fcd34d',
 	className = '',
 }) => {
 	const totalSlices = Math.max(1, Math.floor(denominator || 1));
@@ -60,14 +66,16 @@ export const Pizza = ({
 			<div className="absolute inset-0 rounded-full bg-amber-700 shadow-md" />
 
 			{/* Cheese layer */}
-			<div className="absolute inset-[8%] rounded-full bg-amber-300 shadow-inner" />
+			<div
+				className="absolute inset-[8%] rounded-full shadow-inner bg-yellow-300"
+			/>
 
 			{/* Pepperoni toppings for filled slices */}
 			{pepperoniCircles.map((pos, idx) => (
 				<div
 					key={`pep-${idx}`}
-					className="absolute -translate-x-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-red-600 ring-2 ring-red-700 shadow-[inset_0_2px_0_rgba(0,0,0,0.2)]"
-					style={{ top: `${pos.top}px`, left: `${pos.left}px` }}
+					className="absolute -translate-x-1/2 -translate-y-1/2 w-6 h-6 rounded-full ring-2 ring-red-700 shadow-[inset_0_2px_0_rgba(0,0,0,0.2)]"
+					style={{ top: `${pos.top}px`, left: `${pos.left}px`, backgroundColor: numeratorColor }}
 				/>
 			))}
 
@@ -84,6 +92,118 @@ export const Pizza = ({
 						}}
 					/>
 				))}
+		</div>
+	);
+};
+
+
+const Brownie = ({
+	/** Overall size driver in pixels (controls both width and height proportionally) */
+	size = 180,
+	/** Whether to draw faint segment divider lines */
+	showSliceLines = true,
+	/** Number of decorated segments (sprinkled numerator) */
+	numerator = 0,
+	/** Total number of segments */
+	denominator = 8,
+	/** Primary sprinkle color (defaults to pink) */
+	numeratorColor = '#ec4899',
+	/** Brownie base color */
+	denominatorColor = '#78350f',
+	className = '',
+}) => {
+	const totalSegments = Math.max(1, Math.floor(denominator || 1));
+	const filledSegments = Math.min(Math.max(0, Math.floor(numerator || 0)), totalSegments);
+
+	// Rectangle geometry
+	const width = Math.round(size * 1.6);
+	const height = Math.round(size * 1.0);
+	const insetPct = 0.08; // 8% content inset to mimic a rim
+	const insetX = Math.round(width * insetPct);
+	const insetY = Math.round(height * insetPct);
+	const innerWidth = width - insetX * 2;
+	const innerHeight = height - insetY * 2;
+	const segmentWidth = innerWidth / totalSegments;
+
+	// Secondary sprinkle color (blue)
+	const numeratorSecondaryColor = '#3b82f6';
+
+	// Simple deterministic pseudo-random for stable sprinkle layout
+	const seededRandom = (seed) => {
+		const x = Math.sin(seed) * 10000;
+		return x - Math.floor(x);
+	};
+
+	// Generate sprinkle positions for numerator segments
+	const sprinkleElements = [];
+	const sprinklesPerSegment = 18;
+	for (let seg = 0; seg < filledSegments; seg++) {
+		for (let i = 0; i < sprinklesPerSegment; i++) {
+			const seedBase = seg * 1000 + i * 37;
+			const rx = seededRandom(seedBase + 1);
+			const ry = seededRandom(seedBase + 2);
+			const rAngle = (seededRandom(seedBase + 3) - 0.5) * 90; // -45..45 deg
+			const color = i % 2 === 0 ? numeratorColor : numeratorSecondaryColor;
+
+			const left = insetX + seg * segmentWidth + rx * segmentWidth;
+			const top = insetY + ry * innerHeight;
+
+			sprinkleElements.push(
+				<div
+					key={`spr-${seg}-${i}`}
+					className="absolute"
+					style={{
+						left: `${left}px`,
+						top: `${top}px`,
+						width: '2px',
+						height: '8px',
+						backgroundColor: color,
+						borderRadius: '2px',
+						transform: `translate(-50%, -50%) rotate(${rAngle}deg)`,
+						boxShadow: '0 0 0 1px rgba(0,0,0,0.05) inset',
+					}}
+				/>
+			);
+		}
+	}
+
+	return (
+		<div
+			className={`relative select-none ${className}`}
+			style={{ width, height }}
+			aria-label="Brownie"
+			role="img"
+		>
+			{/* Brownie base */}
+			<div className="absolute inset-0 rounded-lg shadow-md" style={{ backgroundColor: denominatorColor }} />
+
+			{/* Inner surface (slight lightening) */}
+			<div
+				className="absolute rounded-md"
+				style={{
+					left: `${insetX}px`,
+					right: `${insetX}px`,
+					top: `${insetY}px`,
+					bottom: `${insetY}px`,
+					background: 'linear-gradient(180deg, rgba(255,255,255,0.04), rgba(0,0,0,0.05))',
+				}}
+			/>
+
+			{/* Sprinkles for numerator segments */}
+			{sprinkleElements}
+
+			{/* Segment divider lines */}
+			{showSliceLines &&
+				Array.from({ length: totalSegments - 1 }, (_, i) => {
+					const x = insetX + (i + 1) * segmentWidth;
+					return (
+						<div
+							key={`brow-line-${i}`}
+							className="absolute top-[8%] bottom-[8%] w-px bg-white/40"
+							style={{ left: `${x}px` }}
+						/>
+					);
+				})}
 		</div>
 	);
 };

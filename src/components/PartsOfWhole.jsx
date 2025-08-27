@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import confetti from 'canvas-confetti';
 import { Container } from './ui/reused-ui/Container.jsx'
-import { Pizza } from './Foods.jsx'
+import { getRandomFood } from './Foods.jsx'
 
 
 const PartsOfWhole = () => {
@@ -10,6 +10,14 @@ const PartsOfWhole = () => {
     const [denominator, setDenominator] = useState(2);
     const [numeratorInput, setNumeratorInput] = useState(1);
     const [denominatorInput, setDenominatorInput] = useState(1);
+    const [numeratorColor, setNumeratorColor] = useState('red');
+    const [denominatorColor, setDenominatorColor] = useState('yellow');
+
+    // Choose a random food on mount
+    const FoodComponentRef = useRef(null);
+    if (FoodComponentRef.current === null) {
+        FoodComponentRef.current = getRandomFood();
+    }
 
     // Functions
     const generateFraction = () => {
@@ -42,23 +50,40 @@ const PartsOfWhole = () => {
                 What fraction of the pizza has pepperoni?
             </div>
 
-            {/* Food Item */}
-            <div className='w-[100%] h-auto flex flex-col justify-center pl-5'>
-                <Pizza numerator={numerator} denominator={denominator} />
-            </div>
-
-            {/* Fraction Input */}
-            <div className='flex flex-col justify-center items-center text-center p-5 pt-0'>
-                <div className='w-16 h-8 text-center text-lg border border-gray-300 rounded-md'>
-                    {numeratorInput}
+            {/* Main Content */}
+            <div className='flex flex-row justify-center items-center gap-5'>
+                {/* Food Item */}
+                <div className='w-auto h-auto flex justify-center items-center'>
+                    {FoodComponentRef.current && (
+                        <FoodComponentRef.current numerator={numerator} denominator={denominator} numeratorColor={numeratorColor} denominatorColor={denominatorColor} />
+                    )}
                 </div>
-                <div className='w-16 h-[2px] bg-gray-500 my-2 mx-auto'></div>
-                <div className='w-16 h-8 text-center text-lg border border-gray-300 rounded-md'
-                >
-                    {denominatorInput}
+
+                {/* Fraction Input */}
+                <div className='h-[100%] flex flex-row justify-center items-center text-center'>
+                    <div className='h-[100%] flex flex-col justify-center items-center gap-2'>
+                    <div className='flex flex-row justify-center items-center gap-2'>
+                        <div className='w-16 h-10 flex items-center font-bold justify-center text-5xl text-red-400'>
+                            {numeratorInput}
+                        </div>
+                        <div className='flex flex-col justify-center items-center gap-1'>
+                            <button className='w-6 h-6 flex items-center font-bold justify-center text-xl text-red-400 border border-gray-300 rounded-md'>+</button>
+                            <button className='w-6 h-6 flex items-center font-bold justify-center text-xl text-red-400 border border-gray-300 rounded-md'>-</button>
+                        </div>
+                    </div>
+                    <div className='w-16 h-[2px] bg-gray-500 my-2 mx-auto mr-8'></div>
+                    <div className='flex flex-row justify-center items-center gap-2'>
+                        <div className='w-16 h-10 flex items-center font-bold justify-center text-5xl text-yellow-400'>
+                            {denominatorInput}
+                        </div>
+                        <div className='flex flex-col justify-center items-center gap-1'>
+                            <button className='w-6 h-6 flex items-center font-bold justify-center text-xl text-yellow-400 border border-gray-300 rounded-md'>+</button>
+                            <button className='w-6 h-6 flex items-center font-bold justify-center text-xl text-yellow-400 border border-gray-300 rounded-md'>-</button>
+                        </div>
+                    </div>
                 </div>
             </div>
-
+            </div>
         </Container>
 )
 };
