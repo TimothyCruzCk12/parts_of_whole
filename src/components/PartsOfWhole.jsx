@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import confetti from 'canvas-confetti';
 import { Container } from './ui/reused-ui/Container.jsx'
-import { getRandomFood } from './Foods.jsx'
+import { getFoodsArray } from './Foods.jsx'
 
 
 const PartsOfWhole = () => {
@@ -16,12 +16,29 @@ const PartsOfWhole = () => {
     const [foodInfo, setFoodInfo] = useState({ foodName: 'food', toppingName: 'topping' });
     const [isWrongAnswer, setIsWrongAnswer] = useState(false);
     const [feedbackState, setFeedbackState] = useState('button'); // 'button', 'showText'
+    
+    // Food array management
+    const [foodsArray, setFoodsArray] = useState([]);
+    const [currentFoodIndex, setCurrentFoodIndex] = useState(0);
 
-    // Choose a random food on mount
-    const FoodComponentRef = useRef(null);
-    if (FoodComponentRef.current === null) {
-        FoodComponentRef.current = getRandomFood(setNumeratorColor, setDenominatorColor, setCurrentFoodType, setFoodInfo);
-    }
+    // Initialize foods array on mount
+    useEffect(() => {
+        const newFoodsArray = getFoodsArray();
+        setFoodsArray(newFoodsArray);
+        setCurrentFoodIndex(0);
+        
+        // Set initial food properties
+        if (newFoodsArray.length > 0) {
+            const firstFood = newFoodsArray[0];
+            setNumeratorColor(firstFood.numeratorColor);
+            setDenominatorColor(firstFood.denominatorColor);
+            setCurrentFoodType(firstFood.name);
+            setFoodInfo({
+                foodName: firstFood.foodName,
+                toppingName: firstFood.toppingName
+            });
+        }
+    }, []);
 
     // Functions
     const generateFraction = useCallback(() => {
@@ -40,6 +57,40 @@ const PartsOfWhole = () => {
         setDenominator(newDenominator);
         setNumerator(newNumerator);
     }, [currentFoodType]);
+
+    const progressToNextFood = useCallback(() => {
+        const nextIndex = currentFoodIndex + 1;
+        
+        if (nextIndex >= foodsArray.length) {
+            // We've completed the array, generate a new one
+            const newFoodsArray = getFoodsArray();
+            setFoodsArray(newFoodsArray);
+            setCurrentFoodIndex(0);
+            
+            // Set properties for the first food in the new array
+            if (newFoodsArray.length > 0) {
+                const firstFood = newFoodsArray[0];
+                setNumeratorColor(firstFood.numeratorColor);
+                setDenominatorColor(firstFood.denominatorColor);
+                setCurrentFoodType(firstFood.name);
+                setFoodInfo({
+                    foodName: firstFood.foodName,
+                    toppingName: firstFood.toppingName
+                });
+            }
+        } else {
+            // Move to next food in current array
+            setCurrentFoodIndex(nextIndex);
+            const nextFood = foodsArray[nextIndex];
+            setNumeratorColor(nextFood.numeratorColor);
+            setDenominatorColor(nextFood.denominatorColor);
+            setCurrentFoodType(nextFood.name);
+            setFoodInfo({
+                foodName: nextFood.foodName,
+                toppingName: nextFood.toppingName
+            });
+        }
+    }, [currentFoodIndex, foodsArray]);
 
     useEffect(() => {
         generateFraction();
@@ -73,9 +124,10 @@ const PartsOfWhole = () => {
             // Immediately show "Great Job!" text
             setFeedbackState('showText');
             
-            // After 3 seconds, return to button and generate new fraction
+            // After 3 seconds, return to button and progress to next food
             setTimeout(() => {
                 setFeedbackState('button');
+                progressToNextFood();
                 generateFraction();
                 setNumeratorInput(1);
                 setDenominatorInput(1);
@@ -107,8 +159,13 @@ const PartsOfWhole = () => {
             <div className='w-[90%] flex-grow flex flex-row justify-between items-center'>
                 {/* Food Item */}
                 <div className='h-auto flex justify-center items-center'>
-                    {FoodComponentRef.current && (
-                        <FoodComponentRef.current numerator={numerator} denominator={denominator} numeratorColor={numeratorColor} denominatorColor={denominatorColor} />
+                    {foodsArray.length > 0 && currentFoodIndex < foodsArray.length && (
+                        React.createElement(foodsArray[currentFoodIndex].component, {
+                            numerator: numerator,
+                            denominator: denominator,
+                            numeratorColor: numeratorColor,
+                            denominatorColor: denominatorColor
+                        })
                     )}
                 </div>
 
@@ -157,7 +214,7 @@ const PartsOfWhole = () => {
             </div>
 
             {/* CSS for shake animation */}
-            <style jsx>{`
+            <style jsx='true'>{`
                 @keyframes shake {
                     0%, 100% { transform: translateX(0); }
                     25% { transform: translateX(-10px); }
