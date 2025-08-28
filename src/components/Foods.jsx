@@ -1,10 +1,50 @@
 import React from 'react';
 
-export const getRandomFood = () => (Math.random() < 0.5 ? Pizza : Brownie);
+export const getRandomFood = (setNumeratorColor, setDenominatorColor, setCurrentFoodType, setFoodInfo) => {
+	const foodTypes = [
+		{ 
+			component: Pizza, 
+			name: 'Pizza',
+			foodName: 'pizza',
+			toppingName: 'pepperoni',
+			numeratorColor: '#dc2626', // red
+			denominatorColor: '#fcd34d' // yellow
+		},
+		{ 
+			component: Brownie, 
+			name: 'Brownie',
+			foodName: 'brownie',
+			toppingName: 'sprinkles',
+			numeratorColor: '#3b82f6', // blue
+			denominatorColor: '#8b4513' // brown
+		}
+	];
+	
+	const selectedFood = foodTypes[Math.floor(Math.random() * foodTypes.length)];
+	
+	// Set the colors and food type based on the selected food
+	if (setNumeratorColor && setDenominatorColor) {
+		setNumeratorColor(selectedFood.numeratorColor);
+		setDenominatorColor(selectedFood.denominatorColor);
+	}
+	
+	if (setCurrentFoodType) {
+		setCurrentFoodType(selectedFood.name);
+	}
+	
+	if (setFoodInfo) {
+		setFoodInfo({
+			foodName: selectedFood.foodName,
+			toppingName: selectedFood.toppingName
+		});
+	}
+	
+	return selectedFood.component;
+};
 
 const Pizza = ({
 	/** Overall rendered size in pixels */
-	size = 180,
+	size = 160,
 	/** Whether to draw faint slice divider lines */
 	showSliceLines = true,
 	/** Number of slices that have pepperoni (the shaded fraction numerator) */
@@ -84,10 +124,10 @@ const Pizza = ({
 				sliceAngles.map((deg, i) => (
 					<div
 						key={`line-${i}`}
-						className="absolute left-1/2 top-1/2 origin-top bg-white/40"
+						className="absolute left-1/2 top-1/2 origin-top bg-white/60"
 						style={{
-							width: '2px',
-							height: size / 2 - size * 0.08,
+							width: '3px',
+							height: size / 2,
 							transform: `translate(-50%, 0) rotate(${deg}deg)`,
 						}}
 					/>
@@ -106,24 +146,38 @@ const Brownie = ({
 	numerator = 0,
 	/** Total number of segments */
 	denominator = 8,
-	/** Primary sprinkle color (defaults to pink) */
-	numeratorColor = '#ec4899',
+	/** Primary sprinkle color (defaults to blue) */
+	numeratorColor = '#3b82f6',
 	/** Brownie base color */
-	denominatorColor = '#78350f',
+	denominatorColor = '#8b4513',
 	className = '',
 }) => {
 	const totalSegments = Math.max(1, Math.floor(denominator || 1));
 	const filledSegments = Math.min(Math.max(0, Math.floor(numerator || 0)), totalSegments);
 
 	// Rectangle geometry
-	const width = Math.round(size * 1.6);
-	const height = Math.round(size * 1.0);
+	const width = Math.round(size * 1.2);
+	const height = Math.round(size * 0.8);
 	const insetPct = 0.08; // 8% content inset to mimic a rim
 	const insetX = Math.round(width * insetPct);
 	const insetY = Math.round(height * insetPct);
 	const innerWidth = width - insetX * 2;
 	const innerHeight = height - insetY * 2;
-	const segmentWidth = innerWidth / totalSegments;
+
+	// Grid layout for even denominators
+	const getGridDimensions = (total) => {
+		if (total === 2) return { cols: 2, rows: 1 };
+		if (total === 4) return { cols: 2, rows: 2 };
+		if (total === 6) return { cols: 3, rows: 2 };
+		if (total === 8) return { cols: 4, rows: 2 };
+		if (total === 10) return { cols: 5, rows: 2 };
+		if (total === 12) return { cols: 4, rows: 3 };
+		return { cols: total, rows: 1 }; // fallback
+	};
+
+	const { cols, rows } = getGridDimensions(totalSegments);
+	const segmentWidth = innerWidth / cols;
+	const segmentHeight = innerHeight / rows;
 
 	// Secondary sprinkle color (blue)
 	const numeratorSecondaryColor = '#3b82f6';
@@ -138,6 +192,10 @@ const Brownie = ({
 	const sprinkleElements = [];
 	const sprinklesPerSegment = 18;
 	for (let seg = 0; seg < filledSegments; seg++) {
+		// Convert segment index to grid position
+		const gridCol = seg % cols;
+		const gridRow = Math.floor(seg / cols);
+
 		for (let i = 0; i < sprinklesPerSegment; i++) {
 			const seedBase = seg * 1000 + i * 37;
 			const rx = seededRandom(seedBase + 1);
@@ -145,8 +203,8 @@ const Brownie = ({
 			const rAngle = (seededRandom(seedBase + 3) - 0.5) * 90; // -45..45 deg
 			const color = i % 2 === 0 ? numeratorColor : numeratorSecondaryColor;
 
-			const left = insetX + seg * segmentWidth + rx * segmentWidth;
-			const top = insetY + ry * innerHeight;
+			const left = insetX + gridCol * segmentWidth + rx * segmentWidth;
+			const top = insetY + gridRow * segmentHeight + ry * segmentHeight;
 
 			sprinkleElements.push(
 				<div
@@ -192,15 +250,34 @@ const Brownie = ({
 			{/* Sprinkles for numerator segments */}
 			{sprinkleElements}
 
-			{/* Segment divider lines */}
+			{/* Vertical divider lines */}
 			{showSliceLines &&
-				Array.from({ length: totalSegments - 1 }, (_, i) => {
-					const x = insetX + (i + 1) * segmentWidth;
+				Array.from({ length: cols - 1 }, (_, i) => {
+					const x = (i + 1) * (width / cols);
 					return (
 						<div
-							key={`brow-line-${i}`}
-							className="absolute top-[8%] bottom-[8%] w-px bg-white/40"
-							style={{ left: `${x}px` }}
+							key={`brow-v-line-${i}`}
+							className="absolute top-0 bottom-0 bg-white/60"
+							style={{ 
+								left: `${x}px`,
+								width: '3px'
+							}}
+						/>
+					);
+				})}
+
+			{/* Horizontal divider lines */}
+			{showSliceLines && rows > 1 &&
+				Array.from({ length: rows - 1 }, (_, i) => {
+					const y = (i + 1) * (height / rows);
+					return (
+						<div
+							key={`brow-h-line-${i}`}
+							className="absolute left-0 right-0 bg-white/60"
+							style={{ 
+								top: `${y}px`,
+								height: '3px'
+							}}
 						/>
 					);
 				})}
