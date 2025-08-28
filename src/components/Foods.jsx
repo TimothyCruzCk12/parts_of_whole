@@ -1,4 +1,26 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+
+// Custom hook to detect small screens
+const useIsSmallScreen = () => {
+	const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+	useEffect(() => {
+		const checkScreenSize = () => {
+			setIsSmallScreen(window.innerWidth <= 351);
+		};
+
+		// Check on mount
+		checkScreenSize();
+
+		// Add event listener for resize
+		window.addEventListener('resize', checkScreenSize);
+
+		// Cleanup
+		return () => window.removeEventListener('resize', checkScreenSize);
+	}, []);
+
+	return isSmallScreen;
+};
 
 export const getRandomFood = (setNumeratorColor, setDenominatorColor, setCurrentFoodType, setFoodInfo) => {
 	const foodTypes = [
@@ -55,8 +77,8 @@ const Pizza = ({
 	numeratorColor = '#dc2626',
 	/** Color used to represent the denominator (unfilled/background fraction) */
 	denominatorColor = '#fcd34d',
-	className = '',
 }) => {
+	const isSmallScreen = useIsSmallScreen();
 	const totalSlices = Math.max(1, Math.floor(denominator || 1));
 	const filledSlices = Math.min(Math.max(0, Math.floor(numerator || 0)), totalSlices);
 	// Standardize first slice divider at 12 o'clock (requires 180deg rotation due to default downwards orientation)
@@ -64,9 +86,13 @@ const Pizza = ({
 	const baseCssOffsetDeg = 180;
 	const sliceAngles = Array.from({ length: totalSlices }, (_, i) => baseCssOffsetDeg + i * sliceWidthDeg);
 
-	// Geometry helpers
-	const center = size / 2;
-	const cheeseInset = size * 0.08; // matches inset-[8%]
+	// Responsive scaling factor for small screens
+	const scaleFactor = isSmallScreen ? 0.75 : 1;
+	
+	// Geometry helpers - use scaled size for all calculations
+	const effectiveSize = size * scaleFactor;
+	const center = effectiveSize / 2;
+	const cheeseInset = effectiveSize * 0.08; // matches inset-[8%]
 	const maxRadius = center - cheeseInset;
 	const degToRad = (deg) => deg * (Math.PI / 180);
 
@@ -78,12 +104,14 @@ const Pizza = ({
 		const angleRad = degToRad(angleDegClockFromTop);
 
 		// Compute radius: aim for a middle distance, adjust outward only if wedge is too narrow
-		const pepperoniDiameter = 24; // tailwind w-6 h-6 ~ 24px assuming 1rem=16px
+		const basePepperoniDiameter = 24; // tailwind w-6 h-6 ~ 24px assuming 1rem=16px
+		const pepperoniDiameter = basePepperoniDiameter * scaleFactor;
 		const pepperoniRadius = pepperoniDiameter / 2;
 		const safetyMargin = 4; // px
 		const halfSliceRad = degToRad(sliceWidthDeg) / 2;
 		const maxCenterR = Math.max(0, maxRadius - pepperoniRadius - 1);
 		const minCenterR = pepperoniRadius + 1;
+		// Target radius should be proportional to the scaled pizza
 		const targetCenterR = Math.min(maxCenterR, Math.max(minCenterR, maxRadius * 0.6));
 		const requiredRForAngularFit =
 			totalSlices === 1 ? minCenterR : (pepperoniDiameter + safetyMargin) / (2 * Math.sin(halfSliceRad));
@@ -97,8 +125,8 @@ const Pizza = ({
 
 	return (
 		<div
-			className={`relative select-none ${className}`}
-			style={{ width: size, height: size }}
+			className={`pizza-container relative w-auto h-auto select-none`}
+			style={{ width: effectiveSize, height: effectiveSize }}
 			aria-label="Pizza"
 			role="img"
 		>
@@ -111,13 +139,22 @@ const Pizza = ({
 			/>
 
 			{/* Pepperoni toppings for filled slices */}
-			{pepperoniCircles.map((pos, idx) => (
-				<div
-					key={`pep-${idx}`}
-					className="absolute -translate-x-1/2 -translate-y-1/2 w-6 h-6 rounded-full ring-2 ring-red-700 shadow-[inset_0_2px_0_rgba(0,0,0,0.2)]"
-					style={{ top: `${pos.top}px`, left: `${pos.left}px`, backgroundColor: numeratorColor }}
-				/>
-			))}
+			{pepperoniCircles.map((pos, idx) => {
+				const responsivePepperoniSize = 24 * scaleFactor;
+				return (
+					<div
+						key={`pep-${idx}`}
+						className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-red-700 shadow-[inset_0_2px_0_rgba(0,0,0,0.2)]"
+						style={{ 
+							top: `${pos.top}px`, 
+							left: `${pos.left}px`, 
+							backgroundColor: numeratorColor,
+							width: `${responsivePepperoniSize}px`,
+							height: `${responsivePepperoniSize}px`
+						}}
+					/>
+				);
+			})}
 
 			{/* Slice divider lines */}
 			{showSliceLines &&
@@ -127,7 +164,7 @@ const Pizza = ({
 						className="absolute left-1/2 top-1/2 origin-top bg-white/60"
 						style={{
 							width: '3px',
-							height: size / 2,
+							height: effectiveSize / 2,
 							transform: `translate(-50%, 0) rotate(${deg}deg)`,
 						}}
 					/>
@@ -227,7 +264,7 @@ const Brownie = ({
 
 	return (
 		<div
-			className={`relative select-none ${className}`}
+			className={`relative select-none`}
 			style={{ width, height }}
 			aria-label="Brownie"
 			role="img"

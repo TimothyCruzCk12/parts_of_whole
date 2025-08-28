@@ -95,18 +95,18 @@ const PartsOfWhole = () => {
             showSoundButton={true}
         >
             {/* Intro Text */}
-            <div className='text-center text-sm text-gray-500 p-5'>
-                The following food items are cut into equal parts. Use your knowledge of fractions to figure out what fraction is being represented!
+            <div className='text-center text-sm text-gray-500 p-5 pb-3'>
+                Use your knowledge of fractions to figure out what fraction is being represented by the following foods!
             </div>
 
-            <div className='text-center p-5 pt-0'>
+            <div className='text-center p-5 pb-2 pt-0'>
                 What fraction of the {foodInfo.foodName} has {foodInfo.toppingName}?
             </div>
 
             {/* Main Content */}
-            <div className='flex flex-row justify-center items-center gap-5'>
+            <div className='w-[90%] flex-grow flex flex-row justify-between items-center'>
                 {/* Food Item */}
-                <div className='w-auto h-auto flex justify-center items-center'>
+                <div className='h-auto flex justify-center items-center'>
                     {FoodComponentRef.current && (
                         <FoodComponentRef.current numerator={numerator} denominator={denominator} numeratorColor={numeratorColor} denominatorColor={denominatorColor} />
                     )}
@@ -139,7 +139,7 @@ const PartsOfWhole = () => {
             </div>
 
             {/* Check Answer Button / Great Job Text */}
-            <div className='absolute bottom-[10%] w-[100%] flex flex-row justify-center items-center text-center'>
+            <div className='w-[100%] flex flex-row justify-center items-center text-center pb-5'>
                 {feedbackState === 'showText' ? (
                     <div className='text-3xl font-extrabold text-green-700'>
                         Great Job!

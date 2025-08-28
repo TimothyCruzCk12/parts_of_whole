@@ -78,7 +78,7 @@ export function Container({
 				</div>
 				<div className="w-full h-[90%]">
 					<div 
-						className="w-full border rounded-md relative overflow-hidden" 
+						className="w-full border rounded-md relative overflow-hidden flex flex-col justify-center items-center" 
 						style={{ 
 							minHeight: '420px', 
 							height: '100%', 
