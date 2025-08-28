@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 
-// Custom hook to detect small screens
-const useIsSmallScreen = () => {
+// Custom hook to detect small screens with configurable breakpoint
+const useIsSmallScreen = (breakpoint = 351) => {
 	const [isSmallScreen, setIsSmallScreen] = useState(false);
 
 	useEffect(() => {
 		const checkScreenSize = () => {
-			setIsSmallScreen(window.innerWidth <= 351);
+			setIsSmallScreen(window.innerWidth <= breakpoint);
 		};
 
 		// Check on mount
@@ -17,9 +17,53 @@ const useIsSmallScreen = () => {
 
 		// Cleanup
 		return () => window.removeEventListener('resize', checkScreenSize);
-	}, []);
+	}, [breakpoint]);
 
 	return isSmallScreen;
+};
+
+// Helper function to calculate scale factor based on screen width
+const calculateScaleFactor = (width) => {
+	if (width <= 356) {
+		return 0.5; // Very small screens
+	} else if (width <= 411) {
+		return 0.75; // Small screens
+	} else {
+		return 1; // Normal screens
+	}
+};
+
+// Custom hook for brownie scaling with multiple breakpoints
+const useBrownieScaleFactor = () => {
+	// Initialize with correct value if window is available
+	const getInitialScaleFactor = () => {
+		if (typeof window !== 'undefined') {
+			return calculateScaleFactor(window.innerWidth);
+		}
+		return 1; // Default for SSR
+	};
+
+	const [scaleFactor, setScaleFactor] = useState(getInitialScaleFactor);
+
+	useEffect(() => {
+		const checkScreenSize = () => {
+			const width = window.innerWidth;
+			const newScaleFactor = calculateScaleFactor(width);
+			
+			setScaleFactor(newScaleFactor);
+		};
+
+		// Check on mount (in case initial calculation was wrong)
+		checkScreenSize();
+
+		// Add event listener for resize
+		window.addEventListener('resize', checkScreenSize);
+
+		// Cleanup
+		return () => window.removeEventListener('resize', checkScreenSize);
+	}, []);
+
+	return scaleFactor;
 };
 
 export const getRandomFood = (setNumeratorColor, setDenominatorColor, setCurrentFoodType, setFoodInfo) => {
@@ -189,12 +233,15 @@ const Brownie = ({
 	denominatorColor = '#8b4513',
 	className = '',
 }) => {
+	const scaleFactor = useBrownieScaleFactor();
 	const totalSegments = Math.max(1, Math.floor(denominator || 1));
 	const filledSegments = Math.min(Math.max(0, Math.floor(numerator || 0)), totalSegments);
 
-	// Rectangle geometry
-	const width = Math.round(size * 1.2);
-	const height = Math.round(size * 0.8);
+	// Rectangle geometry - use scaled dimensions
+	const baseWidth = Math.round(size * 1.2);
+	const baseHeight = Math.round(size * 0.8);
+	const width = Math.round(baseWidth * scaleFactor);
+	const height = Math.round(baseHeight * scaleFactor);
 	const insetPct = 0.08; // 8% content inset to mimic a rim
 	const insetX = Math.round(width * insetPct);
 	const insetY = Math.round(height * insetPct);
@@ -243,6 +290,10 @@ const Brownie = ({
 			const left = insetX + gridCol * segmentWidth + rx * segmentWidth;
 			const top = insetY + gridRow * segmentHeight + ry * segmentHeight;
 
+			const sprinkleWidth = 2 * scaleFactor;
+			const sprinkleHeight = 8 * scaleFactor;
+			const sprinkleBorderRadius = 2 * scaleFactor;
+
 			sprinkleElements.push(
 				<div
 					key={`spr-${seg}-${i}`}
@@ -250,10 +301,10 @@ const Brownie = ({
 					style={{
 						left: `${left}px`,
 						top: `${top}px`,
-						width: '2px',
-						height: '8px',
+						width: `${sprinkleWidth}px`,
+						height: `${sprinkleHeight}px`,
 						backgroundColor: color,
-						borderRadius: '2px',
+						borderRadius: `${sprinkleBorderRadius}px`,
 						transform: `translate(-50%, -50%) rotate(${rAngle}deg)`,
 						boxShadow: '0 0 0 1px rgba(0,0,0,0.05) inset',
 					}}
@@ -291,13 +342,14 @@ const Brownie = ({
 			{showSliceLines &&
 				Array.from({ length: cols - 1 }, (_, i) => {
 					const x = (i + 1) * (width / cols);
+					const lineWidth = 3 * scaleFactor;
 					return (
 						<div
 							key={`brow-v-line-${i}`}
 							className="absolute top-0 bottom-0 bg-white/60"
 							style={{ 
 								left: `${x}px`,
-								width: '3px'
+								width: `${lineWidth}px`
 							}}
 						/>
 					);
@@ -307,13 +359,14 @@ const Brownie = ({
 			{showSliceLines && rows > 1 &&
 				Array.from({ length: rows - 1 }, (_, i) => {
 					const y = (i + 1) * (height / rows);
+					const lineHeight = 3 * scaleFactor;
 					return (
 						<div
 							key={`brow-h-line-${i}`}
 							className="absolute left-0 right-0 bg-white/60"
 							style={{ 
 								top: `${y}px`,
-								height: '3px'
+								height: `${lineHeight}px`
 							}}
 						/>
 					);
